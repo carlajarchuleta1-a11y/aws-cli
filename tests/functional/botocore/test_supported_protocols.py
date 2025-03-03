@@ -44,6 +44,7 @@ def test_services_with_protocols_trait_have_supported_protocol(service):
 @pytest.mark.parametrize(
     "service",
     _get_services_models_by_protocols_trait(False),
+    indirect=True,
 )
 def test_services_without_protocols_trait_have_supported_protocol(service):
     message = f"Service protocol not supported for {service.service_name}"
