@@ -35,8 +35,11 @@ class CLISession:
 
     def __new__(cls):
         if cls._instance is None:
-            cls._instance = super(CLISession, cls).__new__(cls)
+            cls._instance = super().__new__(cls)
         return cls._instance
+
+    def __init__(self):
+        self._lock = threading.Lock()
 
     @cached_property
     def session_id(self):
@@ -68,7 +71,7 @@ class CLISession:
 
     @cached_property
     def _timestamp(self):
-        return int(datetime.datetime.now(datetime.UTC).timestamp())
+        return int(datetime.datetime.now(datetime.timezone.utc).timestamp())
 
     @cached_property
     def _cachefile(self):
@@ -101,9 +104,10 @@ class CLISession:
 
     def _write_to_cache(self, contents, path):
         if not _CACHE_DIR.exists():
-            _CACHE_DIR.mkdir(parents=True)
-        with open(path, 'w') as f:
-            json.dump(contents, f)
+            _CACHE_DIR.mkdir(parents=True, exist_ok=True)
+        with self._lock:
+            with open(path, 'w') as f:
+                json.dump(contents, f)
 
     def _cached_session_expired(self, cached_timestamp):
         return (
