@@ -60,7 +60,13 @@ class CLISessionDatabaseConnection:
         self._ensure_database_setup()
 
     def execute(self, query, *parameters):
-        return self._connection.execute(query, *parameters)
+        try:
+            return self._connection.execute(query, *parameters)
+        except sqlite3.OperationalError:
+            # Process timed out waiting for database lock.
+            # Return any empty `Cursor` object instead of
+            # raising an exception.
+            return sqlite3.Cursor(self._connection)
 
     def _ensure_database_setup(self):
         self._create_record_table()
