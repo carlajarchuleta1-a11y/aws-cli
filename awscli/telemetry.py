@@ -31,6 +31,8 @@ _CACHE_DIR = Path('~/.aws/cli/cache').expanduser()
 _DATABASE_FILENAME = 'session.db'
 _SESSION_LENGTH_SECONDS = 60 * 30
 
+_CACHE_DIR.mkdir(parents=True, exist_ok=True)
+
 
 @dataclass
 class CLISessionData:
