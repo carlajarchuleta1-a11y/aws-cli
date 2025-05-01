@@ -274,7 +274,7 @@ class FakeCommandVerify(FakeCommand):
         return 0
 
 
-class FakeCLISession:
+class FakeCLISessionOrchestrator:
     @property
     def session_id(self):
         return 'mysessionid'
@@ -780,7 +780,10 @@ class TestAWSCommand(BaseAWSCommandParamsTest):
         self.assertEqual(rc, 252)
         self.assertNotIn('--idempotency-token', self.stderr.getvalue())
 
-    @mock.patch('awscli.telemetry.CLISession', return_value=FakeCLISession())
+    @mock.patch(
+        'awscli.telemetry._get_cli_session_orchestrator',
+        return_value=FakeCLISessionOrchestrator(),
+    )
     @mock.patch('awscli.clidriver.platform.system', return_value='Linux')
     @mock.patch('awscli.clidriver.platform.machine', return_value='x86_64')
     @mock.patch('awscli.clidriver.distro.id', return_value='amzn')

@@ -17,7 +17,6 @@ import os
 import platform
 import re
 import sys
-import threading
 
 import botocore.session
 import distro
@@ -76,10 +75,7 @@ from awscli.logger import (
     set_stream_logger,
 )
 from awscli.plugin import load_plugins
-from awscli.telemetry import (
-    CLISession,
-    add_session_id_component_to_user_agent_extra,
-)
+from awscli.telemetry import add_session_id_component_to_user_agent_extra
 from awscli.utils import (
     IMDSRegionProvider,
     OutputStreamFactory,
@@ -196,7 +192,6 @@ class AWSCLIEntryPoint:
         self._driver = driver
 
     def main(self, args):
-        CLISession().sweep_cache()
         try:
             rc = self._do_main(args)
         except BaseException as e:
