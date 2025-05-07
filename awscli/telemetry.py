@@ -183,10 +183,10 @@ class CLISessionOrchestrator:
             return
         try:
             return os.ttyname(sys.stdin.fileno())
-        # Standard input was redirected to a pseudofile.
-        # This can happen when running tests on IDEs or
-        # running scripts with redirected input.
         except (OSError, io.UnsupportedOperation):
+            # Standard input was redirected to a pseudofile.
+            # This can happen when running tests on IDEs or
+            # running scripts with redirected input.
             return
 
     @cached_property
@@ -198,12 +198,17 @@ class CLISessionOrchestrator:
         return int(datetime.datetime.now(datetime.timezone.utc).timestamp())
 
     def _sweep_cache(self):
-        t = threading.Thread(
-            target=self._sweeper.sweep,
-            args=(self._timestamp - _SESSION_LENGTH_SECONDS,),
-            daemon=True,
-        )
-        t.start()
+        try:
+            t = threading.Thread(
+                target=self._sweeper.sweep,
+                args=(self._timestamp - _SESSION_LENGTH_SECONDS,),
+                daemon=True,
+            )
+            t.start()
+        except Exception:
+            # This is just a background cleanup task. Never
+            # interrupt the main process on error.
+            return
 
 
 def _get_cli_session_orchestrator():
