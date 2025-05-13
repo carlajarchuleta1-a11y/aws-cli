@@ -133,7 +133,12 @@ class CLISessionDatabaseSweeper:
         self._connection = connection
 
     def sweep(self, timestamp):
-        self._connection.execute(self._DELETE_RECORDS, (timestamp,))
+        try:
+            self._connection.execute(self._DELETE_RECORDS, (timestamp,))
+        except Exception:
+            # This is just a background cleanup task. No need to
+            # handle it or direct to stderr.
+            return
 
 
 class CLISessionGenerator:
@@ -198,17 +203,12 @@ class CLISessionOrchestrator:
         return int(datetime.datetime.now(datetime.timezone.utc).timestamp())
 
     def _sweep_cache(self):
-        try:
-            t = threading.Thread(
-                target=self._sweeper.sweep,
-                args=(self._timestamp - _SESSION_LENGTH_SECONDS,),
-                daemon=True,
-            )
-            t.start()
-        except Exception:
-            # This is just a background cleanup task. Never
-            # interrupt the main process on error.
-            return
+        t = threading.Thread(
+            target=self._sweeper.sweep,
+            args=(self._timestamp - _SESSION_LENGTH_SECONDS,),
+            daemon=True,
+        )
+        t.start()
 
 
 def _get_cli_session_orchestrator():
